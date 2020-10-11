@@ -5,12 +5,12 @@ import java.util.Map;
 
 import org.apache.kafka.clients.admin.AdminClientConfig;
 import org.apache.kafka.clients.admin.NewTopic;
-import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
+import org.apache.kafka.common.serialization.StringSerializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.ApplicationArguments;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -21,33 +21,35 @@ import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 
-import com.fasterxml.jackson.databind.ser.std.StringSerializer;
+import com.Kafka.KafkaTest.KafkaProducer.Producers;
 
-import KafkaProducer.Producer;
 
 @SpringBootApplication
-public class KafkaTestApplication implements CommandLineRunner  {
+public class KafkaTestApplication  implements CommandLineRunner{
 
+	private static final Logger logger = LoggerFactory.getLogger(KafkaTestApplication.class);
 	public static void main(String[] args) {
 		SpringApplication.run(KafkaTestApplication.class, args);
 	}
 	
-	@Autowired
-	 Producer producer;
 	
-	@Value(value = "${name}")
-    private String name;
+	@Autowired
+	Producers producers;
+	
+//	@Value(value = "${name}")
+//    private String name;
 	
 	public void run(String... args) throws Exception {
 		System.out.println("hello");
-		Producer.sendMessageToTopic("hello World");
-		System.out.println(name);
+		producers.sendMessageToTopic("hello World");
+		producers.CreateTopic("tests");
+		logger.info("ended");
 		
 	}
-	
 
-	@Value(value = "${kafka.bootstrapAddress}")
-    private String bootstrapAddress;
+
+//	@Value(value = "${kafka.bootstrapAddress}")
+//    private String bootstrapAddress;
 	
 	@Bean
 	public KafkaAdmin admin() {
@@ -57,14 +59,13 @@ public class KafkaTestApplication implements CommandLineRunner  {
 	    return new KafkaAdmin(configs);
 	}
 	
-	
 	@Bean
-	public NewTopic enterMessage(String message)
+	public NewTopic topic()
 	{
-		short replica=2;
-		NewTopic topic = new NewTopic(message, 2, replica);
-		return topic;
+		NewTopic t = new NewTopic("tests",2,(short) 2);
+		return t;
 	}
+	
 	
 //	@Bean
 //	public NewTopic topic1(String TopicName) {
@@ -75,37 +76,33 @@ public class KafkaTestApplication implements CommandLineRunner  {
 //	            .build();
 //	}
 //	
-	
-	
-	
+//	
 	@Bean
-	public ProducerFactory<String, String> producerFactory() {
-	    return new DefaultKafkaProducerFactory(producerConfigs());
-	}
-
-	@Bean
-	public Map<String, Object> producerConfigs() {
-	    Map<String, Object> props = new HashMap();
-	    props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-	    props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-	    props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-	    // See https://kafka.apache.org/documentation/#producerconfigs for more properties
-	    return props;
-	}
-
-	@Bean
-	public KafkaTemplate<String, String> kafkaTemplate() {
-	    return new KafkaTemplate<String, String>(producerFactory());
+	public ProducerFactory<String,String> producer()
+	{
+		return new DefaultKafkaProducerFactory<String, String>(getConfig());
+		
 	}
 	
+	@Bean
+	public Map<String,Object> getConfig()
+	{
+		Map<String,Object> config = new HashMap<String,Object>();
+		config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+		config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+		config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+		return config;
+	}
 	
 	@Bean
-	public KafkaTemplate<String, String> stringTemplate(ProducerFactory<String, String> pf) {
-	    return new KafkaTemplate(pf);
+	public KafkaTemplate<String, String> template()
+	{
+		return new KafkaTemplate<String, String>(producer());
 	}
-
-
-
+//	
+//	
+//
+//
 
 
 	
