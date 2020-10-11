@@ -55,7 +55,7 @@ public class KafkaTestApplication  implements CommandLineRunner{
 	public KafkaAdmin admin() {
 	    Map<String, Object> configs = new HashMap<String, Object>();
 	    configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9092");
-	   // configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,bootstrapAddress);
+	   // configs.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG,bootstrapAddress);cbcvbcv
 	    return new KafkaAdmin(configs);
 	}
 	
